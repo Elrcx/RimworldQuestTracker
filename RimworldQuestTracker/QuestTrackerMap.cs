@@ -12,8 +12,11 @@ namespace RimworldQuestTracker
     {
         private bool initialized = false;
         private bool isDragging = false;
+        private bool isQuestInfoVisible = true;
         private Vector2 dragStartPos = Vector2.zero;
         private Rect questTrackerRect = new Rect(UI.screenWidth - 200f, 20f, 180f, 30f);
+        private float lastClickTime = 0f;
+        private float doubleClickTime = 0.3f;
 
         int amount = UnityEngine.Random.Range(2, 6);  // for testing.
 
@@ -49,8 +52,18 @@ namespace RimworldQuestTracker
 
             if (e.type == EventType.MouseDown && e.button == 0 && questTrackerRect.Contains(e.mousePosition))
             {
-                isDragging = true;
-                dragStartPos = e.mousePosition - questTrackerRect.position;
+                if (Time.realtimeSinceStartup - lastClickTime < doubleClickTime)
+                {
+                    // Double-click detected, toggle visibility of quest info.
+                    isQuestInfoVisible = !isQuestInfoVisible;
+                }
+                else
+                {
+                    // Single-click detected, initiate dragging.
+                    isDragging = true;
+                    dragStartPos = e.mousePosition - questTrackerRect.position;
+                }
+                lastClickTime = Time.realtimeSinceStartup;
                 e.Use();
             }
             else if (isDragging && e.type == EventType.MouseUp && e.button == 0)
@@ -81,19 +94,24 @@ namespace RimworldQuestTracker
 
             // Draw draggable handle.
             Rect labelRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
-            GUI.Label(labelRect, "▼ Tracked quests:");
+            string handleText = isQuestInfoVisible ? "▼ Tracked quests:" : "► Tracked quests:";
+            GUI.Label(labelRect, handleText);
             yOffset += rowHeight;
 
-            // Draw quest information.
-            for (int i = 0; i < amount; i++)
-            {
-                Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
-                GUI.Label(questRect, "► <b>Quest " + (i + 1) + "</b>");
-                yOffset += rowHeight;
 
-                Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                GUI.Label(questDetailsRect, "<i>details</i>");
-                yOffset += rowHeight;
+            // Draw quest information.
+            if (isQuestInfoVisible)
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
+                    GUI.Label(questRect, "► <b>Quest " + (i + 1) + "</b>");
+                    yOffset += rowHeight;
+
+                    Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
+                    GUI.Label(questDetailsRect, "<i>details</i>");
+                    yOffset += rowHeight;
+                }
             }
 
             Text.Anchor = TextAnchor.UpperLeft;
