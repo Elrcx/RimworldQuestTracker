@@ -88,9 +88,7 @@ namespace RimworldQuestTracker
             float rowIndentation = 20f;
 
             // Calculate vertical position.
-            float yOffset = questTrackerRect.y;
-
-            yOffset += rowHeight;
+            float yOffset = questTrackerRect.y + 5f;
 
             // Draw draggable handle.
             Rect labelRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
