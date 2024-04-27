@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RimWorld;
+using RimWorld.QuestGen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +19,6 @@ namespace RimworldQuestTracker
         private Rect questTrackerRect = new Rect(UI.screenWidth - 200f, 20f, 180f, 30f);
         private float lastClickTime = 0f;
         private float doubleClickTime = 0.3f;
-
-        int amount = UnityEngine.Random.Range(2, 6);  // for testing.
 
         public QuestTrackerMap(Map map) : base(map)
         {
@@ -96,23 +96,42 @@ namespace RimworldQuestTracker
             GUI.Label(labelRect, handleText);
             yOffset += rowHeight;
 
-
-            // Draw quest information.
+            // Draw quest information if visible.
             if (isQuestInfoVisible)
             {
-                for (int i = 0; i < amount; i++)
+                QuestManager questManager = Find.QuestManager;
+                if (questManager != null)
                 {
-                    Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
-                    GUI.Label(questRect, "► <b>Quest " + (i + 1) + "</b>");
-                    yOffset += rowHeight;
+                    foreach (Quest quest in questManager.QuestsListForReading)
+                    {
+                        if (!quest.EverAccepted) continue;
 
-                    Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                    GUI.Label(questDetailsRect, "<i>details</i>");
-                    yOffset += rowHeight;
+                        Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
+
+                        string questName = "<b>" + quest.name + "</b>";
+                        string remainingTime = GetRemainingTime(quest);
+                        string questInfo = $"{questName} ({remainingTime})";
+
+                        GUI.Label(questRect, "► " + questInfo);
+                        yOffset += rowHeight;
+
+                        Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
+                        GUI.Label(questDetailsRect, $"<i>{quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPartTip}</i>");
+                        yOffset += rowHeight;
+                    }
                 }
             }
 
             Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private string GetRemainingTime(Quest quest)
+        {
+            if (quest.State != QuestState.Ongoing) return "Completed";
+            int remainingTicks = Mathf.Max(0, quest.GetFirstPartOfType<QuestPart_Delay>().delayTicks - quest.acceptanceTick);
+            int remainingDays = Mathf.CeilToInt((float)remainingTicks / GenDate.TicksPerDay);
+
+            return $"{remainingDays} Days";
         }
 
     }
