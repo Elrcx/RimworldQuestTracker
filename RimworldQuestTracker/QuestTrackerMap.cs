@@ -103,8 +103,10 @@ namespace RimworldQuestTracker
                 QuestManager questManager = Find.QuestManager;
                 if (questManager != null)
                 {
-                    foreach (Quest quest in questManager.QuestsListForReading)
+                    for (int i = questManager.QuestsListForReading.Count - 1; i >= 0; i--)
                     {
+                        Quest quest = questManager.QuestsListForReading[i];
+
                         if (!quest.EverAccepted && quest.State != QuestState.Ongoing) continue;
                         QuestPart_Delay delayPart = GetMainDelayPart(quest);
 
@@ -113,7 +115,6 @@ namespace RimworldQuestTracker
 
                         string expiryInfo = $"<i>{string.Format(delayPart.expiryInfoPart, GetRemainingTime(quest, delayPart))}.</i>";
                         DrawLabel(expiryInfo, rowIndentation, rowHeight, ref yOffset);
-
                     }
                 }
             }
