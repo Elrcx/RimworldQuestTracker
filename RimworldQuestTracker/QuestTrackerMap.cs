@@ -105,18 +105,17 @@ namespace RimworldQuestTracker
                     foreach (Quest quest in questManager.QuestsListForReading)
                     {
                         if (!quest.EverAccepted && quest.State != QuestState.Ongoing) continue;
+                        QuestPart_Delay delayPart = GetMainDelayPart(quest);
 
                         Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
 
                         string questName = "<b>" + quest.name + "</b>";
-                        string remainingTime = GetRemainingTime(quest);
-                        string questInfo = $"{questName}";
 
-                        GUI.Label(questRect, "► " + questInfo);
+                        GUI.Label(questRect, "► " + questName);
                         yOffset += rowHeight;
 
                         Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                        GUI.Label(questDetailsRect, $"<i>{string.Format(quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPart, GetRemainingTime(quest))}.</i>");
+                        GUI.Label(questDetailsRect, $"<i>{string.Format(delayPart.expiryInfoPart, GetRemainingTime(quest, delayPart))}.</i>");
                         yOffset += rowHeight;
                     }
                 }
@@ -125,11 +124,11 @@ namespace RimworldQuestTracker
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private string GetRemainingTime(Quest quest)
+        private string GetRemainingTime(Quest quest, QuestPart_Delay delayPart)
         {
             if (quest.State != QuestState.Ongoing) return "Completed";
 
-            int remainingTicks = Mathf.Max(0, quest.GetFirstPartOfType<QuestPart_Delay>().delayTicks - quest.TicksSinceAccepted);
+            int remainingTicks = Mathf.Max(0, delayPart.delayTicks - quest.TicksSinceAccepted);
             int remainingDays = Mathf.FloorToInt((float)remainingTicks / GenDate.TicksPerDay);
             float remainingDaysFloat = (float)Math.Round((float)remainingTicks / GenDate.TicksPerDay, 1);
             int remainingHours = Mathf.RoundToInt((float)remainingTicks % GenDate.TicksPerDay / GenDate.TicksPerHour);
@@ -143,6 +142,19 @@ namespace RimworldQuestTracker
                 return $"{remainingDaysFloat} Days";
             }
             return $"{remainingHours} Hours";
+        }
+
+        private QuestPart_Delay GetMainDelayPart(Quest quest)
+        {
+            foreach (QuestPart part in quest.PartsListForReading)
+            {
+                if (part is QuestPart_Delay delayPart && delayPart.expiryInfoPart != null)
+                {
+                    return delayPart;
+                }
+            }
+
+            return null;
         }
     }
 }
