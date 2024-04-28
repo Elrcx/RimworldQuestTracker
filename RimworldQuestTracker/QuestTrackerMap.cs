@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using RimWorld.QuestGen;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -107,21 +108,32 @@ namespace RimworldQuestTracker
                         if (!quest.EverAccepted && quest.State != QuestState.Ongoing) continue;
                         QuestPart_Delay delayPart = GetMainDelayPart(quest);
 
-                        Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
+                        string questName = $"► <b>{quest.name}</b>";
+                        DrawLabel(questName, rowIndentation, rowHeight, ref yOffset);
 
-                        string questName = "<b>" + quest.name + "</b>";
+                        string expiryInfo = $"<i>{string.Format(delayPart.expiryInfoPart, GetRemainingTime(quest, delayPart))}.</i>";
+                        DrawLabel(expiryInfo, rowIndentation, rowHeight, ref yOffset);
 
-                        GUI.Label(questRect, "► " + questName);
-                        yOffset += rowHeight;
-
-                        Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                        GUI.Label(questDetailsRect, $"<i>{string.Format(delayPart.expiryInfoPart, GetRemainingTime(quest, delayPart))}.</i>");
-                        yOffset += rowHeight;
                     }
                 }
             }
 
             Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private void DrawLabel(string text, float rowIndentation, float rowHeight, ref float yOffset)
+        {
+            GUI.skin.label.wordWrap = true;
+
+            float labelWidth = questTrackerRect.width - rowIndentation;
+            Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(text));
+            int lines = Mathf.CeilToInt(labelSize.x / labelWidth);
+
+            Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, labelWidth, labelSize.y * lines);
+            GUI.Label(questDetailsRect, text);
+            yOffset += rowHeight * lines;
+
+            GUI.skin.label.wordWrap = false;
         }
 
         private string GetRemainingTime(Quest quest, QuestPart_Delay delayPart)
