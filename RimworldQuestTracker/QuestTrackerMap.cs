@@ -116,7 +116,7 @@ namespace RimworldQuestTracker
                         yOffset += rowHeight;
 
                         Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                        GUI.Label(questDetailsRect, $"<i>{string.Format(quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPart, GetRemainingTime(quest))}</i>");
+                        GUI.Label(questDetailsRect, $"<i>{string.Format(quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPart, GetRemainingTime(quest))}.</i>");
                         yOffset += rowHeight;
                     }
                 }
@@ -128,12 +128,21 @@ namespace RimworldQuestTracker
         private string GetRemainingTime(Quest quest)
         {
             if (quest.State != QuestState.Ongoing) return "Completed";
-            int remainingTicks = Mathf.Max(0, quest.GetFirstPartOfType<QuestPart_Delay>().delayTicks - quest.acceptanceTick);
-            int remainingDays = Mathf.CeilToInt((float)remainingTicks / GenDate.TicksPerDay);
+
+            int remainingTicks = Mathf.Max(0, quest.GetFirstPartOfType<QuestPart_Delay>().delayTicks - quest.TicksSinceAccepted);
+            int remainingDays = Mathf.FloorToInt((float)remainingTicks / GenDate.TicksPerDay);
+            float remainingDaysFloat = (float)Math.Round((float)remainingTicks / GenDate.TicksPerDay, 1);
             int remainingHours = Mathf.RoundToInt((float)remainingTicks % GenDate.TicksPerDay / GenDate.TicksPerHour);
 
-            return remainingDays > 1 ? $"{remainingDays} Days" : $"{remainingHours} Hours";
+            if (remainingDays >= 10)
+            {
+                return $"{remainingDays} Days";
+            }
+            else if (remainingDays > 1 && remainingDays < 10)
+            {
+                return $"{remainingDaysFloat} Days";
+            }
+            return $"{remainingHours} Hours";
         }
-
     }
 }
