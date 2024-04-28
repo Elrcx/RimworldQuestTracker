@@ -104,19 +104,19 @@ namespace RimworldQuestTracker
                 {
                     foreach (Quest quest in questManager.QuestsListForReading)
                     {
-                        if (!quest.EverAccepted) continue;
+                        if (!quest.EverAccepted && quest.State != QuestState.Ongoing) continue;
 
                         Rect questRect = new Rect(questTrackerRect.x, yOffset, questTrackerRect.width, rowHeight);
 
                         string questName = "<b>" + quest.name + "</b>";
                         string remainingTime = GetRemainingTime(quest);
-                        string questInfo = $"{questName} ({remainingTime})";
+                        string questInfo = $"{questName}";
 
                         GUI.Label(questRect, "► " + questInfo);
                         yOffset += rowHeight;
 
                         Rect questDetailsRect = new Rect(questTrackerRect.x + rowIndentation, yOffset, questTrackerRect.width - rowIndentation, rowHeight);
-                        GUI.Label(questDetailsRect, $"<i>{quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPartTip}</i>");
+                        GUI.Label(questDetailsRect, $"<i>{string.Format(quest.GetFirstPartOfType<QuestPart_Delay>().expiryInfoPart, GetRemainingTime(quest))}</i>");
                         yOffset += rowHeight;
                     }
                 }
@@ -130,8 +130,9 @@ namespace RimworldQuestTracker
             if (quest.State != QuestState.Ongoing) return "Completed";
             int remainingTicks = Mathf.Max(0, quest.GetFirstPartOfType<QuestPart_Delay>().delayTicks - quest.acceptanceTick);
             int remainingDays = Mathf.CeilToInt((float)remainingTicks / GenDate.TicksPerDay);
+            int remainingHours = Mathf.RoundToInt((float)remainingTicks % GenDate.TicksPerDay / GenDate.TicksPerHour);
 
-            return $"{remainingDays} Days";
+            return remainingDays > 1 ? $"{remainingDays} Days" : $"{remainingHours} Hours";
         }
 
     }
