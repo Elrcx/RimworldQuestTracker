@@ -107,7 +107,7 @@ namespace RimworldQuestTracker
                     {
                         Quest quest = questManager.QuestsListForReading[i];
 
-                        if (!quest.EverAccepted || quest.State != QuestState.Ongoing || quest.dismissed) continue;
+                        if (!quest.EverAccepted || quest.State != QuestState.Ongoing || quest.dismissed || quest.hidden) continue;
 
                         string questName = $"► <b>{quest.name}</b>";
                         DrawLabel(questName, rowIndentation, rowHeight, ref yOffset);
