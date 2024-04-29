@@ -113,6 +113,8 @@ namespace RimworldQuestTracker
                         string questName = $"► <b>{quest.name}</b>";
                         DrawLabel(questName, rowIndentation, rowHeight, ref yOffset);
 
+                        CheckSpecialRequirements(quest, rowIndentation, rowHeight, ref yOffset);
+
                         string expiryInfo = $"<i>{string.Format(delayPart.expiryInfoPart, GetRemainingTime(quest, delayPart))}.</i>";
                         DrawLabel(expiryInfo, rowIndentation, rowHeight, ref yOffset);
                     }
@@ -120,6 +122,20 @@ namespace RimworldQuestTracker
             }
 
             Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private void CheckSpecialRequirements(Quest quest, float rowIndentation, float rowHeight, ref float yOffset)
+        {
+            foreach (QuestPart part in quest.PartsListForReading)
+            {
+                if (part is QuestPart_InitiateTradeRequest tradeRequest)
+                {
+                    int thingCountInStorage = Find.CurrentMap.resourceCounter.GetCount(tradeRequest.requestedThingDef);
+
+                    string labelText = $"Trade x{tradeRequest.requestedCount} of {tradeRequest.requestedThingDef.LabelCap} ({thingCountInStorage}/{tradeRequest.requestedCount})";
+                    DrawLabel(labelText, rowIndentation, rowHeight, ref yOffset);
+                }
+            }
         }
 
         private void DrawLabel(string text, float rowIndentation, float rowHeight, ref float yOffset)
