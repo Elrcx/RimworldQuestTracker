@@ -125,6 +125,8 @@ namespace RimworldQuestTracker
         private void DrawLabel(string text, float rowIndentation, float rowHeight, ref float yOffset)
         {
             GUI.skin.label.wordWrap = true;
+            Color originalColor = GUI.contentColor;
+            GUI.contentColor = Color.white;
 
             float labelWidth = questTrackerRect.width - rowIndentation;
             Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(text));
@@ -134,6 +136,7 @@ namespace RimworldQuestTracker
             GUI.Label(questDetailsRect, text);
             yOffset += rowHeight * lines;
 
+            GUI.contentColor = originalColor;
             GUI.skin.label.wordWrap = false;
         }
 
