@@ -107,7 +107,7 @@ namespace RimworldQuestTracker
                     {
                         Quest quest = questManager.QuestsListForReading[i];
 
-                        if (!quest.EverAccepted && quest.State != QuestState.Ongoing) continue;
+                        if (!quest.EverAccepted || quest.State != QuestState.Ongoing) continue;
                         QuestPart_Delay delayPart = GetMainDelayPart(quest);
 
                         string questName = $"► <b>{quest.name}</b>";
