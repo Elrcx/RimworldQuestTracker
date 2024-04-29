@@ -108,14 +108,13 @@ namespace RimworldQuestTracker
                         Quest quest = questManager.QuestsListForReading[i];
 
                         if (!quest.EverAccepted || quest.State != QuestState.Ongoing || quest.dismissed) continue;
-                        QuestPart_Delay delayPart = GetMainDelayPart(quest);
 
                         string questName = $"► <b>{quest.name}</b>";
                         DrawLabel(questName, rowIndentation, rowHeight, ref yOffset);
 
                         CheckSpecialRequirements(quest, rowIndentation, rowHeight, ref yOffset);
 
-                        DisplayQuestTimer(rowHeight, rowIndentation, ref yOffset, quest, delayPart);
+                        DisplayQuestTimer(rowHeight, rowIndentation, ref yOffset, quest);
                     }
                 }
             }
@@ -123,8 +122,9 @@ namespace RimworldQuestTracker
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private float DisplayQuestTimer(float rowHeight, float rowIndentation, ref float yOffset, Quest quest, QuestPart_Delay delayPart)
+        private float DisplayQuestTimer(float rowHeight, float rowIndentation, ref float yOffset, Quest quest)
         {
+            QuestPart_Delay delayPart = GetMainDelayPart(quest);
             int ticksLeft = delayPart.delayTicks - quest.TicksSinceAccepted;
             string infoText = "";
 
@@ -135,6 +135,10 @@ namespace RimworldQuestTracker
             else if (delayPart.alertLabel != null)
             {
                 infoText = delayPart.alertLabel;
+            }
+            else
+            {
+                infoText = "Time left {0}";
             }
             string timerInfo = $"<i>{string.Format(infoText, GetRemainingTime(ticksLeft))}.</i>";
 
@@ -201,7 +205,7 @@ namespace RimworldQuestTracker
                 }
             }
 
-            return null;
+            return quest.GetFirstPartOfType<QuestPart_Delay>();
         }
     }
 }
